@@ -6,37 +6,63 @@ import (
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
+	"os"
+	"time"
 )
 
-// TODO dockerize so no dependency on psql
-
 func main() {
-
-	// TODO os.env()
 	log.Print("Running migrations from migrations")
 
-	db, err := sqlx.Connect("postgres", "user=postgres sslmode=disable")
+	postgresUser := os.Getenv("POSTGRES_USER")
+	postgresHost := os.Getenv("POSTGRES_HOST")
+	migrationsDirectory := os.Getenv("MIGRATIONS_DIRECTORY")
+	driver := "postgres"
 
-	if err != nil {
-		panic(err)
+	connectionString := fmt.Sprintf("user=%s sslmode=disable host=%s", postgresUser, postgresHost)
+
+	log.Printf("Connection string: %s", connectionString)
+	log.Printf("Migrations directory: %s", migrationsDirectory)
+
+	var db *sqlx.DB
+	tries := 0
+
+	for {
+
+		if tries > 10 {
+			log.Fatal("Unable to connect to postgres, exiting.")
+		}
+
+		var err error
+		db, err = sqlx.Connect(driver, connectionString)
+
+		if err == nil {
+			break
+		}
+
+		log.Print("Sleeping while waiting on postgres")
+		tries += 1
+		time.Sleep(5 * time.Second)
 	}
 
-	filenames := getMigrationFilenames()
+	// Grab the filenames in our migration directory
+	filenames := getMigrationFilenames(migrationsDirectory)
 
+	// Run them
 	for _, filename := range filenames {
 		log.Printf("Found %s", filename)
-		fileContent := getMigrationFileContent(filename)
+		fileContent := getMigrationFileContent(migrationsDirectory, filename)
 		db.MustExec(fileContent)
 	}
 
 	log.Print("Migrations complete")
 
+	// Exit with a happy status code
+	os.Exit(0)
 }
 
-func getMigrationFilenames() []string {
-	// TODO os.env()
+func getMigrationFilenames(migrationsDirectory string) []string {
 	var filenames []string
-	files, err := ioutil.ReadDir("migrations")
+	files, err := ioutil.ReadDir(migrationsDirectory)
 
 	if err != nil {
 		panic(err)
@@ -49,9 +75,8 @@ func getMigrationFilenames() []string {
 	return filenames
 }
 
-func getMigrationFileContent(filename string) string {
-	// TODO os.env()
-	path := fmt.Sprintf("migrations/%s", filename)
+func getMigrationFileContent(migrationsDirectory string, filename string) string {
+	path := fmt.Sprintf("%s/%s", migrationsDirectory, filename)
 	data, err := ioutil.ReadFile(path)
 
 	if err != nil {

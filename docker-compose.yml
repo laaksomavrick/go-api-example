@@ -1,0 +1,18 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/migrate.Dockerfile
+    depends_on:
+      - db
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_HOST: 'db'
+      MIGRATIONS_DIRECTORY: 'migrations'
