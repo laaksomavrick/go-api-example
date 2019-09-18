@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -10,8 +11,14 @@ import (
 	"time"
 )
 
+// For a proper migration tool, we'd have a 'migrations' table with a record of migrations
+// previously run, using that info to only run newly discovered files in the MIGRATIONS_DIRECTORY
+
+// Since this is a demo, every execution recreates the world (ie. drops schema and recreates tables)
+// for convenience
+
 func main() {
-	log.Print("Running migrations from migrations")
+	log.Print("running migrations")
 
 	postgresUser := os.Getenv("POSTGRES_USER")
 	postgresHost := os.Getenv("POSTGRES_HOST")
@@ -20,16 +27,48 @@ func main() {
 
 	connectionString := fmt.Sprintf("user=%s sslmode=disable host=%s", postgresUser, postgresHost)
 
-	log.Printf("Connection string: %s", connectionString)
-	log.Printf("Migrations directory: %s", migrationsDirectory)
+	log.Printf("connection string: %s", connectionString)
+	log.Printf("migrations directory: %s", migrationsDirectory)
 
+	// Make sure we can connect to the db
+	db, err := connectToDb(driver, connectionString)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Grab the filenames in our migration directory
+	filenames, err := getMigrationFilenames(migrationsDirectory)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Run them
+	for _, filename := range filenames {
+		log.Printf("Found %s", filename)
+		fileContent, err := getMigrationFileContent(migrationsDirectory, filename)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		db.MustExec(fileContent)
+	}
+
+	log.Print("migrations complete")
+
+	// Exit with a happy status code
+	os.Exit(0)
+}
+
+func connectToDb(driver string, connectionString string) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	tries := 0
 
 	for {
-
 		if tries > 10 {
-			log.Fatal("Unable to connect to postgres, exiting.")
+			return nil, errors.New("unable to connect to postgres, exiting")
 		}
 
 		var err error
@@ -39,49 +78,36 @@ func main() {
 			break
 		}
 
-		log.Print("Sleeping while waiting on postgres")
+		log.Print("sleeping while waiting on postgres")
 		tries += 1
 		time.Sleep(5 * time.Second)
 	}
 
-	// Grab the filenames in our migration directory
-	filenames := getMigrationFilenames(migrationsDirectory)
-
-	// Run them
-	for _, filename := range filenames {
-		log.Printf("Found %s", filename)
-		fileContent := getMigrationFileContent(migrationsDirectory, filename)
-		db.MustExec(fileContent)
-	}
-
-	log.Print("Migrations complete")
-
-	// Exit with a happy status code
-	os.Exit(0)
+	return db, nil
 }
 
-func getMigrationFilenames(migrationsDirectory string) []string {
+func getMigrationFilenames(migrationsDirectory string) ([]string, error) {
 	var filenames []string
 	files, err := ioutil.ReadDir(migrationsDirectory)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	for _, file := range files {
 		filenames = append(filenames, file.Name())
 	}
 
-	return filenames
+	return filenames, nil
 }
 
-func getMigrationFileContent(migrationsDirectory string, filename string) string {
+func getMigrationFileContent(migrationsDirectory string, filename string) (string, error) {
 	path := fmt.Sprintf("%s/%s", migrationsDirectory, filename)
 	data, err := ioutil.ReadFile(path)
 
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return string(data)
+	return string(data), nil
 }
