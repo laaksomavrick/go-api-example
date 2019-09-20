@@ -9,11 +9,10 @@ import (
 
 // TODO: reconcile with connectToDb logic in migrate.go
 // TODO: in production app, this could fail fast and have the pod be rescheduled
+// TODO: how to handle connection being lost?
 func ConnectToDb(driver string, connectionString string) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	tries := 0
-
-	log.Print(connectionString)
 
 	for {
 		if tries > 10 {

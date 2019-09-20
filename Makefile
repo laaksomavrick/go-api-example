@@ -9,5 +9,5 @@ build:
 psql:
 	@psql --host=localhost --port=5432 --user=postgres
 
-run-local:
+run-dev-api:
 	@GO_ENV=development PORT=3000 POSTGRES_USER=postgres POSTGRES_HOST=0.0.0.0 go run src/main.go
