@@ -5,6 +5,7 @@ WORKDIR /app
 RUN apk add --no-cache git
 COPY go.mod go.sum ./
 COPY tasks/migrate.go tasks/migrate.go
+COPY lib lib
 COPY migrations migrations
 RUN go build -ldflags="-s -w" -o migrate tasks/migrate.go
 

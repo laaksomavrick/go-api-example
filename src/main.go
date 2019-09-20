@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+	"go-palindrome/lib"
 	"go-palindrome/src/palindrome"
 	"log"
-	_ "github.com/lib/pq"
 )
 
 const (
@@ -16,8 +16,8 @@ func main()  {
 	config := palindrome.NewConfig()
 	router := mux.NewRouter()
 
-	connectionString := fmt.Sprintf("user=%s sslmode=disable host=%s", config.PostgresUser, config.PostgresHost)
-	db, err := palindrome.ConnectToDb(driver, connectionString)
+	connectionString := lib.GetConnectionString(config.PostgresUser, config.PostgresHost)
+	db, err := lib.ConnectToDb(driver, connectionString)
 
 	if err != nil {
 		log.Fatal(err)

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"go-palindrome/lib"
 	"io/ioutil"
 	"log"
 	"os"
-	"time"
 )
 
 // For a proper migration tool, we'd have a 'migrations' table with a record of migrations
@@ -25,13 +23,13 @@ func main() {
 	migrationsDirectory := os.Getenv("MIGRATIONS_DIRECTORY")
 	driver := "postgres"
 
-	connectionString := fmt.Sprintf("user=%s sslmode=disable host=%s", postgresUser, postgresHost)
+	connectionString := lib.GetConnectionString(postgresUser, postgresHost)
 
 	log.Printf("connection string: %s", connectionString)
 	log.Printf("migrations directory: %s", migrationsDirectory)
 
 	// Make sure we can connect to the db
-	db, err := connectToDb(driver, connectionString)
+	db, err := lib.ConnectToDb(driver, connectionString)
 
 	if err != nil {
 		log.Fatal(err)
@@ -60,30 +58,6 @@ func main() {
 
 	// Exit with a happy status code
 	os.Exit(0)
-}
-
-func connectToDb(driver string, connectionString string) (*sqlx.DB, error) {
-	var db *sqlx.DB
-	tries := 0
-
-	for {
-		if tries > 10 {
-			return nil, errors.New("unable to connect to postgres, exiting")
-		}
-
-		var err error
-		db, err = sqlx.Connect(driver, connectionString)
-
-		if err == nil {
-			break
-		}
-
-		log.Print("sleeping while waiting on postgres")
-		tries += 1
-		time.Sleep(5 * time.Second)
-	}
-
-	return db, nil
 }
 
 func getMigrationFilenames(migrationsDirectory string) ([]string, error) {

@@ -1,13 +1,17 @@
-package palindrome
+package lib
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
 )
 
-// TODO: reconcile with connectToDb logic in migrate.go
+func GetConnectionString(postgresUser string, postgresHost string) string {
+	return fmt.Sprintf("user=%s sslmode=disable host=%s", postgresUser, postgresHost)
+}
+
 // TODO: in production app, this could fail fast and have the pod be rescheduled
 // TODO: how to handle connection being lost?
 func ConnectToDb(driver string, connectionString string) (*sqlx.DB, error) {
