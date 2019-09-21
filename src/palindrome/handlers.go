@@ -36,6 +36,7 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 		upsertMessageDto := UpsertMessageDto{}
 		repo := NewRepository(s.db)
 
+		// Map body to dto
 		err := json.NewDecoder(r.Body).Decode(&upsertMessageDto)
 
 		if err != nil {
@@ -43,6 +44,7 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 			return
 		}
 
+		// Validate dto is sound
 		err = upsertMessageDto.Validate()
 
 		if err != nil {
@@ -50,6 +52,7 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 			return
 		}
 
+		// Create message
 		message, err := repo.CreateMessage(upsertMessageDto.Content)
 
 		if err != nil {
@@ -64,6 +67,8 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 func GetMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
+
+		// Parse {id} from url
 		id, err := getIdFromUrl(r)
 
 		if err != nil {
@@ -71,6 +76,7 @@ func GetMessageHandler(s *Server) http.HandlerFunc {
 			return
 		}
 
+		// Get the message
 		message, err := repo.GetMessage(id)
 
 		if err != nil {
@@ -133,10 +139,33 @@ func PatchMessageHandler(s *Server) http.HandlerFunc {
 
 func DeleteMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check that id exists
-		// Delete the resource
-		// Return nothing
-		OkResponse(w, map[string]interface{}{"hello": "world"})
+		repo := NewRepository(s.db)
+
+		// Parse {id} from url
+		id, err := getIdFromUrl(r)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
+			return
+		}
+
+		// Check that message exists
+		_, err = repo.GetMessage(id)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusNotFound, statusNotFoundMessage)
+			return
+		}
+
+		// Delete the message
+		err = repo.DeleteMessage(id)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
+			return
+		}
+
+		OkResponse(w, nil)
 	}
 }
 

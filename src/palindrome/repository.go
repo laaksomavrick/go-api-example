@@ -105,3 +105,12 @@ func (r *Repository) UpdateMessage(id int, content string) (Message, error) {
 
 	return message, nil
 }
+
+func (r *Repository) DeleteMessage(id int) error {
+	_, err := r.db.Exec(
+		"DELETE FROM messages WHERE id = $1",
+		id,
+	)
+
+	return err
+}
