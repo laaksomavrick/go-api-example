@@ -73,3 +73,35 @@ func (r *Repository) GetMessage(id int) (Message, error) {
 
 	return message, nil
 }
+
+func (r *Repository) UpdateMessage(id int, content string) (Message, error) {
+	message := Message{
+		Content: content,
+	}
+	message.SetIsPalindrome()
+
+	err := r.db.QueryRow(
+		`UPDATE messages
+				SET (content, is_palindrome) = ($1, $2) 
+				WHERE id = $3
+				RETURNING id`,
+		message.Content,
+		message.IsPalindrome,
+		id,
+	).Scan(&id)
+
+	if err != nil {
+		log.Print(err)
+		return Message{}, err
+	}
+
+	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	err = row.StructScan(&message)
+
+	if err != nil {
+		log.Print(err)
+		return Message{}, err
+	}
+
+	return message, nil
+}

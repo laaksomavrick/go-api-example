@@ -84,11 +84,50 @@ func GetMessageHandler(s *Server) http.HandlerFunc {
 
 func PatchMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check that id exists
-		// Check that request is valid
+		upsertMessageDto := UpsertMessageDto{}
+		repo := NewRepository(s.db)
+
+		// Parse {id} from url
+		id, err := getIdFromUrl(r)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
+			return
+		}
+
+		// Map body to dto
+		err = json.NewDecoder(r.Body).Decode(&upsertMessageDto)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
+			return
+		}
+
+		// Validate dto is sound
+		err = upsertMessageDto.Validate()
+
+		if err != nil {
+			ErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		// Check that message exists
+		_, err = repo.GetMessage(id)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusNotFound, statusNotFoundMessage)
+			return
+		}
+
 		// Update the message
-		// Return the updated message
-		OkResponse(w, map[string]interface{}{"hello": "world"})
+		message, err := repo.UpdateMessage(id, upsertMessageDto.Content)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
+			return
+		}
+
+		OkResponse(w, message)
 	}
 }
 

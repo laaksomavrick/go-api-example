@@ -3,3 +3,14 @@
 -- In other words, I want to make it as painless as possible for folks to get this app up and running.
 DROP SCHEMA IF EXISTS palindrome;
 CREATE SCHEMA palindrome;
+
+-- Create a db trigger to set updated at
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+    RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- TODO note requirement to 'make build' on changes in README.md

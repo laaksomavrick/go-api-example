@@ -8,3 +8,8 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 CREATE INDEX messages_idx_is_palindrome ON messages (is_palindrome);
+
+CREATE TRIGGER set_updated_at
+BEFORE UPDATE ON messages
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
