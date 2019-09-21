@@ -27,3 +27,31 @@ func (r *Repository) GetMessages() ([]Message, error) {
 
 	return messages, nil
 }
+
+func (r *Repository) CreateMessage(content string) (Message, error) {
+	var id int
+
+	message := Message{
+		Content: content,
+	}
+	message.SetIsPalindrome()
+
+	err := r.db.QueryRow(
+			"INSERT INTO messages (content, is_palindrome) VALUES ($1, $2) RETURNING id",
+			message.Content,
+			message.IsPalindrome,
+		).Scan(&id)
+
+	if err != nil {
+		return Message{}, err
+	}
+
+	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	err = row.StructScan(&message)
+
+	if err != nil {
+		return Message{}, err
+	}
+
+	return message, nil
+}

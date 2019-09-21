@@ -1,16 +1,28 @@
 package palindrome
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+)
+
+const (
+	statusInternalServerErrorMessage = "Internal server error"
+	statusBadRequestMessage = "Bad request"
+	statusUnprocessableEntityMessage = "Unprocessable entity"
 )
 
 func GetMessagesHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
+
+		// In a production API, this would probably need to implement pagination using SIZE and OFFSET
+		// so we don't return too many rows
 		messages, err := repo.GetMessages()
 
 		if err != nil {
-			ErrorResponse(w, http.StatusInternalServerError, "Oops! Something went wrong.")
+			log.Print(err)
+			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
 			return
 		}
 
@@ -20,11 +32,32 @@ func GetMessagesHandler(s *Server) http.HandlerFunc {
 
 func PostMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Validate request
-		// Call isPalindrome
-		// Insert
-		// Return newly created record
-		OkResponse(w, map[string]interface{}{"hello": "world"})
+		createMessageDto := CreateMessageDto{}
+		repo := NewRepository(s.db)
+
+		err := json.NewDecoder(r.Body).Decode(&createMessageDto)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
+			return
+		}
+
+		err = createMessageDto.Validate()
+
+		if err != nil {
+			ErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
+		message, err := repo.CreateMessage(createMessageDto.Content)
+
+		if err != nil {
+			log.Print(err)
+			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
+			return
+		}
+
+		OkResponse(w, message)
 	}
 }
 

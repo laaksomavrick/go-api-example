@@ -38,7 +38,7 @@ func (s *Server) Init() {
 
 func (s *Server) wire() {
 	// In a real API, we'd probably have some middlewares we'd like to apply for common functionality
-	// e.g authentication and authorization
+	// e.g authentication and authorization; logging requests
 	// See https://github.com/gorilla/mux#middleware
 
 	// DI the server object to our handlers
