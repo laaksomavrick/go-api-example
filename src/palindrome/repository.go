@@ -43,6 +43,7 @@ func (r *Repository) CreateMessage(content string) (Message, error) {
 		).Scan(&id)
 
 	if err != nil {
+		log.Print(err)
 		return Message{}, err
 	}
 
@@ -50,6 +51,23 @@ func (r *Repository) CreateMessage(content string) (Message, error) {
 	err = row.StructScan(&message)
 
 	if err != nil {
+		log.Print(err)
+		return Message{}, err
+	}
+
+	return message, nil
+}
+
+func (r *Repository) GetMessage(id int) (Message, error) {
+	var message Message
+
+	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	err := row.StructScan(&message)
+
+	if err != nil {
+		// No log here, as "no rows in result set" is most likely cause of err
+		// *Could* be issues with the sql statement or db connection issues, but we'd likely see
+		// other things blowing up in that case as well
 		return Message{}, err
 	}
 

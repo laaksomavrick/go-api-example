@@ -2,14 +2,16 @@ package palindrome
 
 import (
 	"encoding/json"
-	"log"
+	"github.com/gorilla/mux"
 	"net/http"
+	"strconv"
 )
 
 const (
 	statusInternalServerErrorMessage = "Internal server error"
 	statusBadRequestMessage = "Bad request"
 	statusUnprocessableEntityMessage = "Unprocessable entity"
+	statusNotFoundMessage = "Requested resource not found"
 )
 
 func GetMessagesHandler(s *Server) http.HandlerFunc {
@@ -21,7 +23,6 @@ func GetMessagesHandler(s *Server) http.HandlerFunc {
 		messages, err := repo.GetMessages()
 
 		if err != nil {
-			log.Print(err)
 			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
 			return
 		}
@@ -32,27 +33,26 @@ func GetMessagesHandler(s *Server) http.HandlerFunc {
 
 func PostMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		createMessageDto := CreateMessageDto{}
+		upsertMessageDto := UpsertMessageDto{}
 		repo := NewRepository(s.db)
 
-		err := json.NewDecoder(r.Body).Decode(&createMessageDto)
+		err := json.NewDecoder(r.Body).Decode(&upsertMessageDto)
 
 		if err != nil {
 			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
 			return
 		}
 
-		err = createMessageDto.Validate()
+		err = upsertMessageDto.Validate()
 
 		if err != nil {
 			ErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
 			return
 		}
 
-		message, err := repo.CreateMessage(createMessageDto.Content)
+		message, err := repo.CreateMessage(upsertMessageDto.Content)
 
 		if err != nil {
-			log.Print(err)
 			ErrorResponse(w, http.StatusInternalServerError, statusInternalServerErrorMessage)
 			return
 		}
@@ -63,10 +63,22 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 
 func GetMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check that id exists
-		// Get the message
-		// Return it
-		OkResponse(w, map[string]interface{}{"hello": "world"})
+		repo := NewRepository(s.db)
+		id, err := getIdFromUrl(r)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusBadRequest, statusBadRequestMessage)
+			return
+		}
+
+		message, err := repo.GetMessage(id)
+
+		if err != nil {
+			ErrorResponse(w, http.StatusNotFound, statusNotFoundMessage)
+			return
+		}
+
+		OkResponse(w, message)
 	}
 }
 
@@ -87,4 +99,11 @@ func DeleteMessageHandler(s *Server) http.HandlerFunc {
 		// Return nothing
 		OkResponse(w, map[string]interface{}{"hello": "world"})
 	}
+}
+
+func getIdFromUrl(r *http.Request) (int, error) {
+	vars := mux.Vars(r)
+	maybeId := vars["id"]
+	id, err := strconv.Atoi(maybeId)
+	return id, err
 }
