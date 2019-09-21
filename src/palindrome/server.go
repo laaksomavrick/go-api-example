@@ -44,11 +44,17 @@ func (s *Server) wire() {
 	// DI the server object to our handlers
 	// this makes mocking dependencies easy to do in tests and has the pleasant property
 	// of making available useful, shared functionality (ie: database, config)
+	getHealthzHandler := s.inject(GetHealthzHandler)
+
 	getMessagesHandler := s.inject(GetMessagesHandler)
 	postMessageHandler := s.inject(PostMessageHandler)
 	getMessageHandler := s.inject(GetMessageHandler)
 	patchMessageHandler := s.inject(PatchMessageHandler)
 	deleteMessageHandler := s.inject(DeleteMessageHandler)
+
+	// Though not necessary, a /healthz endpoint typically exists for checking the service health
+	// Additionally, if we were using something like prometheus, we'd have a /metrics as well
+	s.router.HandleFunc("/healthz", getHealthzHandler).Methods(GET)
 
 	s.router.HandleFunc("/messages", getMessagesHandler).Methods(GET)
 	s.router.HandleFunc("/message", postMessageHandler).Methods(POST)

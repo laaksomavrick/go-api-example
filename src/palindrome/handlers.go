@@ -14,6 +14,13 @@ const (
 	statusNotFoundMessage = "Requested resource not found"
 )
 
+func GetHealthzHandler(s *Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// This might do some pings to other processes which this service depends on e.g postgres
+		OkResponse(w, "ok")
+	}
+}
+
 func GetMessagesHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
