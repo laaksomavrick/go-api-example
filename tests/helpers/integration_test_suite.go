@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/suite"
 	"go-palindrome/lib"
-	"log"
+	"io/ioutil"
+	"net/http"
 	"os"
-	_ "github.com/lib/pq"
 )
 
 const (
@@ -18,9 +19,9 @@ const (
 
 type IntegrationTestSuite struct {
 	suite.Suite
-	db *sqlx.DB
-	apiHost string
-	apiPort string
+	DB           *sqlx.DB
+	apiHost      string
+	apiPort      string
 	postgresUser string
 	postgresHost string
 }
@@ -35,26 +36,50 @@ func (suite *IntegrationTestSuite) Init() {
 	db, err := lib.ConnectToDb(driver, connectionString)
 
 	if err != nil {
-		log.Print(err)
-		suite.Fail("error connecting to postgres")
+		suite.HandleError(err)
 	}
 
-	suite.db = db
+	suite.DB = db
 }
 
 func (suite *IntegrationTestSuite) Truncate(table string) error {
 	query := fmt.Sprintf("TRUNCATE TABLE %s", table)
-	_, err := suite.db.Exec(query)
+	_, err := suite.DB.Exec(query)
 	return err
 }
 
-func (suite *IntegrationTestSuite) MapToBuffer(body map[string]string) *bytes.Buffer {
+func (suite *IntegrationTestSuite) MapToBuffer(body map[string]interface{}) *bytes.Buffer {
 	marshalled, err := json.Marshal(body)
 
 	if err != nil {
-		log.Print(err)
-		suite.Fail("error mapping body to buffer")
+		suite.HandleError(err)
 	}
 
 	return bytes.NewBuffer(marshalled)
+}
+
+func (suite *IntegrationTestSuite) ResponseToMap(response *http.Response) map[string]interface{} {
+	var body map[string]interface{}
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+
+	if err != nil {
+		suite.HandleError(err)
+	}
+
+	err = json.Unmarshal(responseBody, &body)
+
+	if err != nil {
+		suite.HandleError(err)
+	}
+
+	return body
+}
+
+func (suite *IntegrationTestSuite) GetApiUrl(path string) string {
+	return fmt.Sprintf("http://%s:%s/%s", suite.apiHost, suite.apiPort, path)
+}
+
+func (suite *IntegrationTestSuite) HandleError(err error) {
+	suite.Fail(err.Error())
 }
