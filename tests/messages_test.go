@@ -21,6 +21,7 @@ type MessageTestSuite struct {
 // BeforeAll
 func (suite *MessageTestSuite) SetupSuite() {
 	suite.Init()
+	suite.CheckTableExists("messages")
 }
 
 // BeforeEach

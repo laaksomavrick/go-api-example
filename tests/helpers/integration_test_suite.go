@@ -9,8 +9,10 @@ import (
 	"github.com/stretchr/testify/suite"
 	"go-palindrome/lib"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -46,6 +48,37 @@ func (suite *IntegrationTestSuite) Truncate(table string) error {
 	query := fmt.Sprintf("TRUNCATE TABLE %s", table)
 	_, err := suite.DB.Exec(query)
 	return err
+}
+
+func (suite *IntegrationTestSuite) CheckTableExists(table string) {
+	exists := false
+	tries := 0
+
+	for {
+		if tries > 10 {
+			suite.Fail("unable to find table")
+		}
+
+		err := suite.DB.QueryRow(`
+			SELECT EXISTS (
+				SELECT * FROM information_schema.tables
+				WHERE table_name = $1
+			);
+		`, table).Scan(&exists)
+
+		if err != nil {
+			suite.HandleError(err)
+		}
+
+		if exists == true {
+			break
+		}
+
+		log.Print("sleeping while waiting for table to exist")
+		tries += 1
+		time.Sleep(5 * time.Second)
+	}
+
 }
 
 func (suite *IntegrationTestSuite) MapToBuffer(body map[string]interface{}) *bytes.Buffer {

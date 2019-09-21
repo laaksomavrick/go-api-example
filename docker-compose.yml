@@ -29,3 +29,16 @@ services:
       POSTGRES_HOST: 'db'
       PORT: '3000'
       GO_ENV: 'production'
+  tests:
+    build:
+      context: .
+      dockerfile: docker/tests.Dockerfile
+    depends_on:
+      - db
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_HOST: 'db'
+      PORT: '3000'
+      GO_ENV: 'production'
+      API_HOST: 'palindrome'
+      API_PORT: '3000'
