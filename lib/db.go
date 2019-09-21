@@ -12,8 +12,6 @@ func GetConnectionString(postgresUser string, postgresHost string) string {
 	return fmt.Sprintf("user=%s sslmode=disable host=%s", postgresUser, postgresHost)
 }
 
-// TODO: in production app, this could fail fast and have the pod be rescheduled
-// TODO: how to handle connection being lost?
 func ConnectToDb(driver string, connectionString string) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	tries := 0

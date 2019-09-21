@@ -1,7 +1,10 @@
-.PHONY: up build psql run-local
+.PHONY: up down build psql run-local
 
 up:
 	@docker-compose -f docker-compose.yml up
+
+down:
+	@docker-compose down
 
 build:
 	@docker-compose -f docker-compose.yml build

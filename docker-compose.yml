@@ -16,3 +16,16 @@ services:
       POSTGRES_USER: 'postgres'
       POSTGRES_HOST: 'db'
       MIGRATIONS_DIRECTORY: 'migrations'
+  palindrome:
+    ports:
+      - '3000:3000'
+    build:
+      context: .
+      dockerfile: docker/palindrome.Dockerfile
+    depends_on:
+      - db
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_HOST: 'db'
+      PORT: '3000'
+      GO_ENV: 'production'
