@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+// apiResponse defines the shape of our API's response format. All responses
+// can be expected to be in this shape.
 type apiResponse struct {
 	Resource   interface{} `json:"resource"`
 	Error  interface{}      `json:"error"`

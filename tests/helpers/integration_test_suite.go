@@ -19,6 +19,9 @@ const (
 	driver = "postgres"
 )
 
+// IntegrationTestSuite defines the shape of an integration test suite, providing common
+// functionality (connecting to the database) alongside some utility functions required for
+// integration testing.
 type IntegrationTestSuite struct {
 	suite.Suite
 	DB           *sqlx.DB
@@ -28,6 +31,7 @@ type IntegrationTestSuite struct {
 	postgresHost string
 }
 
+// Init initializes the test suite, establishing a database connection and setting up config values.
 func (suite *IntegrationTestSuite) Init() {
 	suite.apiHost = os.Getenv("API_HOST")
 	suite.apiPort = os.Getenv("API_PORT")
@@ -44,12 +48,14 @@ func (suite *IntegrationTestSuite) Init() {
 	suite.DB = db
 }
 
+// Truncate truncates a specified table.
 func (suite *IntegrationTestSuite) Truncate(table string) error {
 	query := fmt.Sprintf("TRUNCATE TABLE %s", table)
 	_, err := suite.DB.Exec(query)
 	return err
 }
 
+// CheckTableExists checks whether a table exists, with retry logic.
 func (suite *IntegrationTestSuite) CheckTableExists(table string) {
 	exists := false
 	tries := 0
@@ -81,6 +87,7 @@ func (suite *IntegrationTestSuite) CheckTableExists(table string) {
 
 }
 
+// MapToBuffer maps a go map to a buffer.
 func (suite *IntegrationTestSuite) MapToBuffer(body map[string]interface{}) *bytes.Buffer {
 	marshalled, err := json.Marshal(body)
 
@@ -91,6 +98,7 @@ func (suite *IntegrationTestSuite) MapToBuffer(body map[string]interface{}) *byt
 	return bytes.NewBuffer(marshalled)
 }
 
+// ResponseToMap maps a http response to a go map.
 func (suite *IntegrationTestSuite) ResponseToMap(response *http.Response) map[string]interface{} {
 	var body map[string]interface{}
 
@@ -109,10 +117,12 @@ func (suite *IntegrationTestSuite) ResponseToMap(response *http.Response) map[st
 	return body
 }
 
+// GetApiUrl returns the api url for http requests.
 func (suite *IntegrationTestSuite) GetApiUrl(path string) string {
 	return fmt.Sprintf("http://%s:%s/%s", suite.apiHost, suite.apiPort, path)
 }
 
+// HandleError is a helper for handling an error in the test suite.
 func (suite *IntegrationTestSuite) HandleError(err error) {
 	suite.Fail(err.Error())
 }

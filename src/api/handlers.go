@@ -10,10 +10,10 @@ import (
 const (
 	statusInternalServerErrorMessage = "Internal server error"
 	statusBadRequestMessage = "Bad request"
-	statusUnprocessableEntityMessage = "Unprocessable entity"
 	statusNotFoundMessage = "Requested resource not found"
 )
 
+// GetHealthzHandler handles incoming requests against the healthz endpoint.
 func GetHealthzHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// This might do some pings to other processes which this service depends on e.g postgres
@@ -21,6 +21,7 @@ func GetHealthzHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// GetMessagesHandler handles incoming requests against the get messages endpoint.
 func GetMessagesHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
@@ -38,6 +39,7 @@ func GetMessagesHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// PostMessageHandler handles incoming requests against the create message endpoint.
 func PostMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		upsertMessageDto := UpsertMessageDto{}
@@ -71,6 +73,7 @@ func PostMessageHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// GetMessageHandler handles incoming requests against the get message endpoint.
 func GetMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
@@ -95,6 +98,7 @@ func GetMessageHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// PatchMessageHandler handles incoming requests against the update message endpoint.
 func PatchMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		upsertMessageDto := UpsertMessageDto{}
@@ -144,6 +148,7 @@ func PatchMessageHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// DeleteMessageHandler handles incoming requests against the delete message endpoint.
 func DeleteMessageHandler(s *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		repo := NewRepository(s.db)
@@ -176,6 +181,7 @@ func DeleteMessageHandler(s *Server) http.HandlerFunc {
 	}
 }
 
+// getIdFromUrl is a utility function to parse the {id} parameter out of a given request's url
 func getIdFromUrl(r *http.Request) (int, error) {
 	vars := mux.Vars(r)
 	maybeId := vars["id"]

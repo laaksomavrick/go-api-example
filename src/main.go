@@ -12,6 +12,7 @@ const (
 	driver = "postgres"
 )
 
+// Application entry point
 func main()  {
 	config := api.NewConfig()
 	router := mux.NewRouter()

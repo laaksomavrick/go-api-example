@@ -15,14 +15,21 @@ const (
 	DELETE = http.MethodDelete
 )
 
+// Server defines the shape of the server, ie, the dependencies this service requires
+// in order to function. This is the top-level object which all handlers have injected into them, and thus
+// provides shared resources (e.g database) to all downstream components (e.g repositories). This application
+// architecture provides some nice properties (easily testable components, easy mocking, no DI framework magic)
+// at the cost of a little boilerplate (see main.go) and set up (see wire()).
 type Server struct {
 	router *mux.Router
 	db *sqlx.DB
 	config *Config
 }
 
+// ServerHandlerFunc defines the shape of a http handler for use with the Server.
 type ServerHandlerFunc = func(server *Server) http.HandlerFunc
 
+// NewServer constructs a new server struct.
 func NewServer(router *mux.Router, db *sqlx.DB, config *Config) *Server {
 	return &Server{
 		router: router,
@@ -31,11 +38,13 @@ func NewServer(router *mux.Router, db *sqlx.DB, config *Config) *Server {
 	}
 }
 
+// Init initializes the server, mapping routes to their handlers and serving the http server.
 func (s *Server) Init() {
 	s.wire()
 	s.serve()
 }
 
+// Wire sets up the http handlers and maps routes to their handlers
 func (s *Server) wire() {
 	// In a real API, we'd probably have some middlewares we'd like to apply for common functionality
 	// e.g authentication and authorization; logging requests

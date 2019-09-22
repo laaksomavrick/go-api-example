@@ -5,16 +5,20 @@ import (
 	"log"
 )
 
+// Repository defines the shape of a repository, notably the dependencies required.
+// Functionally, it provides an api to wrap database operations.
 type Repository struct {
 	db *sqlx.DB
 }
 
+// NewRepository constructs a new repository.
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		db:db,
 	}
 }
 
+// GetMessages retrieves all messages in the messages table.
 func (r *Repository) GetMessages() ([]Message, error) {
 	messages := []Message{}
 
@@ -28,6 +32,7 @@ func (r *Repository) GetMessages() ([]Message, error) {
 	return messages, nil
 }
 
+// CreateMessage inserts a message into the messages table.
 func (r *Repository) CreateMessage(content string) (Message, error) {
 	var id int
 
@@ -58,6 +63,7 @@ func (r *Repository) CreateMessage(content string) (Message, error) {
 	return message, nil
 }
 
+// GetMessage retrieves a specified message from the messages table.
 func (r *Repository) GetMessage(id int) (Message, error) {
 	var message Message
 
@@ -74,6 +80,7 @@ func (r *Repository) GetMessage(id int) (Message, error) {
 	return message, nil
 }
 
+// UpdateMessage updates a specified message from the messages table.
 func (r *Repository) UpdateMessage(id int, content string) (Message, error) {
 	message := Message{
 		Content: content,
@@ -106,7 +113,9 @@ func (r *Repository) UpdateMessage(id int, content string) (Message, error) {
 	return message, nil
 }
 
+// DeleteMessage deletes a specified message from the messages table.
 func (r *Repository) DeleteMessage(id int) error {
+	// Might use soft deletes depending on the business use case
 	_, err := r.db.Exec(
 		"DELETE FROM messages WHERE id = $1",
 		id,
