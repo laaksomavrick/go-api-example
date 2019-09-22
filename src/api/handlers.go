@@ -9,8 +9,8 @@ import (
 
 const (
 	statusInternalServerErrorMessage = "Internal server error"
-	statusBadRequestMessage = "Bad request"
-	statusNotFoundMessage = "Requested resource not found"
+	statusBadRequestMessage          = "Bad request"
+	statusNotFoundMessage            = "Requested resource not found"
 )
 
 // GetHealthzHandler handles incoming requests against the healthz endpoint.

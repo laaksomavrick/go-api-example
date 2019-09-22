@@ -6,11 +6,11 @@ import "time"
 // it provides tags for determining how to serialize itself for json and
 // the database (postgres).
 type Message struct {
-	Id int `db:"id" json:"id"`
-	Content string `db:"content" json:"content"`
-	IsPalindrome bool `db:"is_palindrome" json:"isPalindrome"`
-	CreatedAt time.Time `db:"created_at" json:"createdAt"`
-	UpdatedAt time.Time `db:"updated_at" json:"updatedAt"`
+	Id           int       `db:"id" json:"id"`
+	Content      string    `db:"content" json:"content"`
+	IsPalindrome bool      `db:"is_palindrome" json:"isPalindrome"`
+	CreatedAt    time.Time `db:"created_at" json:"createdAt"`
+	UpdatedAt    time.Time `db:"updated_at" json:"updatedAt"`
 }
 
 // SetIsPalindrome determines whether the given Content of a message is a palindrome or not,
@@ -25,4 +25,3 @@ func (m *Message) SetIsPalindrome() {
 	reversed := string(r)
 	m.IsPalindrome = reversed == m.Content
 }
-

@@ -14,7 +14,7 @@ type Repository struct {
 // NewRepository constructs a new repository.
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		db:db,
+		db: db,
 	}
 }
 
@@ -42,17 +42,17 @@ func (r *Repository) CreateMessage(content string) (Message, error) {
 	message.SetIsPalindrome()
 
 	err := r.db.QueryRow(
-			"INSERT INTO messages (content, is_palindrome) VALUES ($1, $2) RETURNING id",
-			message.Content,
-			message.IsPalindrome,
-		).Scan(&id)
+		"INSERT INTO messages (content, is_palindrome) VALUES ($1, $2) RETURNING id",
+		message.Content,
+		message.IsPalindrome,
+	).Scan(&id)
 
 	if err != nil {
 		log.Print(err)
 		return Message{}, err
 	}
 
-	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	row := r.db.QueryRowx("SELECT * FROM messages WHERE id = $1", id)
 	err = row.StructScan(&message)
 
 	if err != nil {
@@ -67,7 +67,7 @@ func (r *Repository) CreateMessage(content string) (Message, error) {
 func (r *Repository) GetMessage(id int) (Message, error) {
 	var message Message
 
-	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	row := r.db.QueryRowx("SELECT * FROM messages WHERE id = $1", id)
 	err := row.StructScan(&message)
 
 	if err != nil {
@@ -102,7 +102,7 @@ func (r *Repository) UpdateMessage(id int, content string) (Message, error) {
 		return Message{}, err
 	}
 
-	row := r.db.QueryRowx( "SELECT * FROM messages WHERE id = $1", id)
+	row := r.db.QueryRowx("SELECT * FROM messages WHERE id = $1", id)
 	err = row.StructScan(&message)
 
 	if err != nil {

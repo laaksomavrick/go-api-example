@@ -13,7 +13,7 @@ const (
 )
 
 // Application entry point
-func main()  {
+func main() {
 	config := api.NewConfig()
 	router := mux.NewRouter()
 
@@ -28,4 +28,3 @@ func main()  {
 
 	server.Init()
 }
-

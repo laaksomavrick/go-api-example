@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	GET = http.MethodGet
-	POST = http.MethodPost
-	PATCH = http.MethodPatch
+	GET    = http.MethodGet
+	POST   = http.MethodPost
+	PATCH  = http.MethodPatch
 	DELETE = http.MethodDelete
 )
 
@@ -22,7 +22,7 @@ const (
 // at the cost of a little boilerplate (see main.go) and set up (see wire()).
 type Server struct {
 	router *mux.Router
-	db *sqlx.DB
+	db     *sqlx.DB
 	config *Config
 }
 
@@ -33,7 +33,7 @@ type ServerHandlerFunc = func(server *Server) http.HandlerFunc
 func NewServer(router *mux.Router, db *sqlx.DB, config *Config) *Server {
 	return &Server{
 		router: router,
-		db: db,
+		db:     db,
 		config: config,
 	}
 }

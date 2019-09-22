@@ -4,8 +4,8 @@ import "os"
 
 // Config defines the shape of the configurable parameters for the API.
 type Config struct {
-	goEnv string
-	port string
+	goEnv        string
+	port         string
 	PostgresUser string
 	PostgresHost string
 }
@@ -14,8 +14,8 @@ type Config struct {
 // to swap these values out for different environments.
 func NewConfig() *Config {
 	return &Config{
-		goEnv: os.Getenv("GO_ENV"),
-		port: os.Getenv("PORT"),
+		goEnv:        os.Getenv("GO_ENV"),
+		port:         os.Getenv("PORT"),
 		PostgresUser: os.Getenv("POSTGRES_USER"),
 		PostgresHost: os.Getenv("POSTGRES_HOST"),
 	}
