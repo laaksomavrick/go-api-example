@@ -9,19 +9,19 @@ services:
   migrate:
     build:
       context: .
-      dockerfile: docker/migrate.Dockerfile
+      dockerfile: docker/Dockerfile.migrate
     depends_on:
       - db
     environment:
       POSTGRES_USER: 'postgres'
       POSTGRES_HOST: 'db'
       MIGRATIONS_DIRECTORY: 'migrations'
-  palindrome:
+  api:
     ports:
       - '3000:3000'
     build:
       context: .
-      dockerfile: docker/palindrome.Dockerfile
+      dockerfile: docker/Dockerfile.api
     depends_on:
       - db
     environment:
@@ -32,7 +32,7 @@ services:
   tests:
     build:
       context: .
-      dockerfile: docker/tests.Dockerfile
+      dockerfile: docker/Dockerfile.tests
     depends_on:
       - db
     environment:
@@ -40,5 +40,5 @@ services:
       POSTGRES_HOST: 'db'
       PORT: '3000'
       GO_ENV: 'production'
-      API_HOST: 'palindrome'
+      API_HOST: 'api'
       API_PORT: '3000'
