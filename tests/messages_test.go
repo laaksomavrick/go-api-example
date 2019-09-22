@@ -24,6 +24,14 @@ func (suite *MessageTestSuite) SetupSuite() {
 	suite.CheckTableExists("messages")
 }
 
+// AfterAll
+func (suite *MessageTestSuite) TearDownSuite() {
+	err := suite.Truncate("messages")
+	if err != nil {
+		suite.Fail(err.Error())
+	}
+}
+
 // BeforeEach
 func (suite *MessageTestSuite) SetupTest() {
 	err := suite.Truncate("messages")
