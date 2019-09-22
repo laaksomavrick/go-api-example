@@ -12,5 +12,3 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
--- TODO note requirement to 'make build' on changes in README.md
