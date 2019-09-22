@@ -1,4 +1,4 @@
-package palindrome
+package api
 
 import (
 	"github.com/jmoiron/sqlx"

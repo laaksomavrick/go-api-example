@@ -4,7 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"go-palindrome/lib"
-	"go-palindrome/src/palindrome"
+	"go-palindrome/src/api"
 	"log"
 )
 
@@ -13,7 +13,7 @@ const (
 )
 
 func main()  {
-	config := palindrome.NewConfig()
+	config := api.NewConfig()
 	router := mux.NewRouter()
 
 	connectionString := lib.GetConnectionString(config.PostgresUser, config.PostgresHost)
@@ -23,7 +23,7 @@ func main()  {
 		log.Fatal(err)
 	}
 
-	server := palindrome.NewServer(router, db, config)
+	server := api.NewServer(router, db, config)
 
 	server.Init()
 }
