@@ -1,6 +1,9 @@
 package api
 
-import "time"
+import (
+    "time"
+    "strings"
+)
 
 // Message defines the shape of a message as a Go struct. Notably,
 // it provides tags for determining how to serialize itself for json and
@@ -23,5 +26,5 @@ func (m *Message) SetIsPalindrome() {
 	}
 
 	reversed := string(r)
-	m.IsPalindrome = reversed == m.Content
+	m.IsPalindrome = strings.ToLower(reversed) == strings.ToLower(m.Content)
 }
